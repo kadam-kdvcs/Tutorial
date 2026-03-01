@@ -1,0 +1,27 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "tutorial:block/machine/industrial_processing_unit_idle",
+		"1": "tutorial:block/machine/machine_back",
+		"3": "tutorial:block/machine/machine_left",
+		"4": "tutorial:block/machine/machine_right",
+		"6": "tutorial:block/machine/machine_top",
+		"7": "tutorial:block/machine/machine_bottom",
+		"particle": "tutorial:block/machine/industrial_processing_unit_idle"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [16, 16, 16],
+			"faces": {
+				"north": {"uv": [0, 0, 16, 16], "texture": "#0"},
+				"east": {"uv": [0, 0, 16, 16], "texture": "#3"},
+				"south": {"uv": [0, 0, 16, 16], "texture": "#1"},
+				"west": {"uv": [0, 0, 16, 16], "texture": "#4"},
+				"up": {"uv": [0, 0, 16, 16], "texture": "#6"},
+				"down": {"uv": [0, 0, 16, 16], "texture": "#7"}
+			}
+		}
+	]
+}

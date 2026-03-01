@@ -1,5 +1,6 @@
 {
   "item.tutorial.raw_material": "Raw Material",
   "block.tutorial.raw_material_block": "Raw Material Block",
+  "block.tutorial.industrial_processing_unit": "Industrial Processing Unit",
   "tab.tutorial": "Tutorial"
 }

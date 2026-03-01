@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "tutorial:block/industrial_processing_unit"},
+    "facing=south": { "model": "tutorial:block/industrial_processing_unit", "y": 180},
+    "facing=west": { "model": "tutorial:block/industrial_processing_unit", "y": 270 },
+    "facing=east": { "model": "tutorial:block/industrial_processing_unit", "y": 90 }
+  }
+}

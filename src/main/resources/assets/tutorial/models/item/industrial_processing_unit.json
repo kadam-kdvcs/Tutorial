@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "north": "tutorial:block/machine/industrial_processing_unit_idle",
+    "south": "tutorial:block/machine/machine_back",
+    "east":  "tutorial:block/machine/machine_left",
+    "west":  "tutorial:block/machine/machine_right",
+    "up":    "tutorial:block/machine/machine_top",
+    "down":  "tutorial:block/machine/machine_bottom",
+    "particle": "tutorial:block/machine/industrial_processing_unit_idle"
+  }
+}

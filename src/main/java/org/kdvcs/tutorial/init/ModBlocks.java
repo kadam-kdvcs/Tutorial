@@ -10,6 +10,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.kdvcs.tutorial.Tutorial;
+import org.kdvcs.tutorial.block.machine.IndustrialProcessingUnitBlock;
 
 import java.util.function.Supplier;
 
@@ -24,6 +25,10 @@ public class ModBlocks {
     public static final RegistryObject<Block> RAW_MATERIAL_BLOCK =
             registerBlock("raw_material_block",
                     () -> new Block(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+
+    // 使用无参构造器
+    public static final RegistryObject<Block> INDUSTRIAL_PROCESSING_UNIT =
+            registerBlock("industrial_processing_unit", IndustrialProcessingUnitBlock::new);
 
     // 通用方块注册方法。
     // name 为注册名，block 为方块的创建方法（Supplier）。
