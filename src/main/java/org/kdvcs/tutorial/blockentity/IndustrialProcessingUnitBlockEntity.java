@@ -27,7 +27,24 @@ public class IndustrialProcessingUnitBlockEntity extends BlockEntity implements 
      */
     private int progress = 0;
 
+    /**
+     * 用于 Menu 与客户端同步数据的容器。
+     *
+     * ContainerData 的作用是把 BlockEntity 中的整数数据
+     * 暴露给 Menu 系统，从而在客户端与服务端之间自动同步。
+     *
+     * 在本例中我们只同步一个字段：
+     * index = 0  → progress
+     *
+     * 如果以后需要同步更多数据（例如最大进度、能量等），
+     * 只需要增加新的 index 即可。
+     */
     protected final ContainerData data = new ContainerData() {
+
+        /**
+         * Menu 读取数据时调用。
+         * 根据 index 返回对应的数据值。
+         */
         @Override
         public int get(int index) {
             return switch (index) {
@@ -36,11 +53,21 @@ public class IndustrialProcessingUnitBlockEntity extends BlockEntity implements 
             };
         }
 
+        /**
+         * Menu 写入数据时调用。
+         * 客户端同步数据时会通过这里写回。
+         */
         @Override
         public void set(int index, int value) {
             if (index == 0) progress = value;
         }
 
+        /**
+         * 返回需要同步的数据数量。
+         *
+         * 因为这里只有 progress 一个变量，
+         * 所以返回 1。
+         */
         @Override
         public int getCount() {
             return 1;
@@ -121,11 +148,30 @@ public class IndustrialProcessingUnitBlockEntity extends BlockEntity implements 
         progress = pTag.getInt("Progress");
     }
 
+    /**
+     * 返回界面标题。
+     *
+     * 当玩家打开 GUI 时，
+     * Screen 会使用这个 Component 作为窗口标题。
+     */
     @Override
     public Component getDisplayName() {
         return Component.literal("be.title.industrial_processing_unit");
     }
 
+    /**
+     * 创建 Menu。
+     *
+     * 当玩家打开这个方块的界面时，
+     * Forge 会调用这个方法来创建对应的 Menu。
+     *
+     * id：菜单同步 ID
+     * inventory：玩家物品栏
+     * player：打开界面的玩家
+     *
+     * 这里我们把当前 BlockEntity 与 ContainerData
+     * 传入 Menu，使界面能够访问机器数据并进行同步。
+     */
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
