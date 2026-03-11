@@ -3,11 +3,18 @@ package org.kdvcs.tutorial.blockentity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
+import org.kdvcs.tutorial.container.menu.IndustrialProcessingUnitMenu;
 import org.kdvcs.tutorial.init.ModBlockEntities;
 
-public class IndustrialProcessingUnitBlockEntity extends BlockEntity {
+public class IndustrialProcessingUnitBlockEntity extends BlockEntity implements MenuProvider {
 
     /**
      * 一个教学用的示例字段。
@@ -19,6 +26,26 @@ public class IndustrialProcessingUnitBlockEntity extends BlockEntity {
      * 数据是否能在重进世界后恢复
      */
     private int progress = 0;
+
+    protected final ContainerData data = new ContainerData() {
+        @Override
+        public int get(int index) {
+            return switch (index) {
+                case 0 -> progress;
+                default -> 0;
+            };
+        }
+
+        @Override
+        public void set(int index, int value) {
+            if (index == 0) progress = value;
+        }
+
+        @Override
+        public int getCount() {
+            return 1;
+        }
+    };
 
     /**
      * 工业处理单元的方块实体（BlockEntity）。
@@ -94,14 +121,14 @@ public class IndustrialProcessingUnitBlockEntity extends BlockEntity {
         progress = pTag.getInt("Progress");
     }
 
-    /**
-     * 教学用调试方法。
-     *
-     * 在没有 GUI 的情况下，
-     * 通过聊天信息输出当前进度，
-     * 用于验证 tick 与 NBT 是否正常工作。
-     */
-    public Component getDebugMessages() {
-        return Component.literal("Progress: " + progress);
+    @Override
+    public Component getDisplayName() {
+        return Component.literal("be.title.industrial_processing_unit");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
+        return new IndustrialProcessingUnitMenu(id, inventory, this, data);
     }
 }
