@@ -107,15 +107,38 @@ public class IndustrialProcessingUnitBlock extends HorizontalDirectionalBlock im
                                  BlockPos pos, Player player,
                                  InteractionHand hand, BlockHitResult hit) {
 
+        // 方块被玩家右键时调用。
+        // 这里我们用它作为打开 GUI 的入口。
+
+        // GUI 必须由服务端发起，因此只在服务端执行打开逻辑。
+        // 客户端只负责渲染界面，不负责创建 Menu。
         if (!level.isClientSide()) {
+
+            // 获取当前位置绑定的 BlockEntity
             BlockEntity entity = level.getBlockEntity(pos);
+
+            // 确认该实体确实是我们的工业处理单元
             if (entity instanceof IndustrialProcessingUnitBlockEntity juicer) {
+
+                // 打开界面。
+                // NetworkHooks.openScreen 会：
+                // 1. 在服务端创建 Menu
+                // 2. 通过网络把打开界面的信息发送给客户端
+                // 3. 客户端根据 MenuType 创建对应的 Screen
+                //
+                // 这里传入 pos，是为了让客户端能够找到对应位置的 BlockEntity。
                 NetworkHooks.openScreen((ServerPlayer) player, juicer, pos);
+
             } else {
+                // 如果当前位置没有正确的 BlockEntity，
+                // 说明出现了逻辑错误，直接抛出异常。
                 throw new IllegalStateException("Missing Container!");
             }
         }
-        return InteractionResult.sidedSuccess(level.isClientSide());
 
+        // 返回交互结果。
+        // sidedSuccess 会在客户端和服务端分别返回正确的结果，
+        // 保证交互逻辑在两端保持一致。
+        return InteractionResult.sidedSuccess(level.isClientSide());
     }
 }
