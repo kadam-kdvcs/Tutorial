@@ -42,6 +42,14 @@ public class IndustrialProcessingUnitScreen extends AbstractContainerScreen<Indu
         this.imageHeight = 174;
     }
 
+
+    @Override
+    protected void init() {
+        super.init();
+        this.inventoryLabelX = 8;
+        this.inventoryLabelY = 81;
+    }
+
     /**
      * 渲染 GUI 背景。
      *
@@ -89,5 +97,8 @@ public class IndustrialProcessingUnitScreen extends AbstractContainerScreen<Indu
 
         // 调用父类渲染 GUI 元素
         super.render(graphics, mouseX, mouseY, partialTick);
+
+        // 渲染鼠标悬停在物品上的提示信息
+        renderTooltip(graphics, mouseX, mouseY);
     }
 }

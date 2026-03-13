@@ -141,4 +141,24 @@ public class IndustrialProcessingUnitBlock extends HorizontalDirectionalBlock im
         // 保证交互逻辑在两端保持一致。
         return InteractionResult.sidedSuccess(level.isClientSide());
     }
+
+    @Override
+    public void onRemove(BlockState pState, Level pLevel, BlockPos pPos, BlockState pNewState, boolean pIsMoving) {
+
+        // 只有当旧方块与新方块不是同一个方块时，
+        // 才说明当前方块真的被替换/破坏了
+        if (pState.getBlock() != pNewState.getBlock()) {
+
+            // 取出当前位置的 BlockEntity
+            BlockEntity blockEntity = pLevel.getBlockEntity(pPos);
+
+            // 如果它确实是工业处理单元的 BE，就执行掉落逻辑
+            if (blockEntity instanceof IndustrialProcessingUnitBlockEntity industrialProcessingUnit) {
+                industrialProcessingUnit.drops();
+            }
+        }
+
+        // 保留父类逻辑
+        super.onRemove(pState, pLevel, pPos, pNewState, pIsMoving);
+    }
 }
