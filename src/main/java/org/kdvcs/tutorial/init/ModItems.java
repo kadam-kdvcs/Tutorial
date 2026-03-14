@@ -18,6 +18,7 @@ public class ModItems {
     // "raw_material" 为物品的注册名（Registry Name），
     // 同时也会作为资源文件与模型文件的命名基础。
     public static final RegistryObject<Item> RAW_MATERIAL = registerItem("raw_material");
+    public static final RegistryObject<Item> MATERIAL_INGOT = registerItem("material_ingot");
 
     // 注册一个最基础的物品。
     // 仅需要提供注册名，使用默认 Item.Properties。

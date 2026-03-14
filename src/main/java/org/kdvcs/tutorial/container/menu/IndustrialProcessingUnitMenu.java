@@ -55,7 +55,7 @@ public class IndustrialProcessingUnitMenu extends AbstractContainerMenu {
         // 从网络数据中读取方块位置，并找到对应的 BlockEntity
         this(id, inv,
                 inv.player.level().getBlockEntity(buf.readBlockPos()),
-                new SimpleContainerData(1));
+                new SimpleContainerData(2));
     }
 
     /**
@@ -139,6 +139,20 @@ public class IndustrialProcessingUnitMenu extends AbstractContainerMenu {
                     topRow
             ));
         }
+    }
+
+    public boolean isCrafting() {
+        return data.get(0) > 0;
+    }
+
+    public int getProgress() {
+        int progress = data.get(0);
+        int maxProgress = data.get(1);
+        int arrowWidth = 30;
+
+        return maxProgress > 0
+                ? Math.round((float) progress * arrowWidth / maxProgress)
+                : 0;
     }
 
     /**

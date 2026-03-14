@@ -1,8 +1,13 @@
 {
   "variants": {
-    "facing=north": { "model": "tutorial:block/industrial_processing_unit"},
-    "facing=south": { "model": "tutorial:block/industrial_processing_unit", "y": 180},
-    "facing=west": { "model": "tutorial:block/industrial_processing_unit", "y": 270 },
-    "facing=east": { "model": "tutorial:block/industrial_processing_unit", "y": 90 }
+    "facing=north,working=false": { "model": "tutorial:block/industrial_processing_unit" },
+    "facing=south,working=false": { "model": "tutorial:block/industrial_processing_unit", "y": 180 },
+    "facing=west,working=false": { "model": "tutorial:block/industrial_processing_unit", "y": 270 },
+    "facing=east,working=false": { "model": "tutorial:block/industrial_processing_unit", "y": 90 },
+
+    "facing=north,working=true": { "model": "tutorial:block/industrial_processing_unit_working" },
+    "facing=south,working=true": { "model": "tutorial:block/industrial_processing_unit_working", "y": 180 },
+    "facing=west,working=true": { "model": "tutorial:block/industrial_processing_unit_working", "y": 270 },
+    "facing=east,working=true": { "model": "tutorial:block/industrial_processing_unit_working", "y": 90 }
   }
 }

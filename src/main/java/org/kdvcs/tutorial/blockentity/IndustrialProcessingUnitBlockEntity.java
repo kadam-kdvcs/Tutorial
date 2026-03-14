@@ -17,8 +17,10 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.kdvcs.tutorial.block.machine.IndustrialProcessingUnitBlock;
 import org.kdvcs.tutorial.container.menu.IndustrialProcessingUnitMenu;
 import org.kdvcs.tutorial.init.ModBlockEntities;
+import org.kdvcs.tutorial.init.ModItems;
 
 public class IndustrialProcessingUnitBlockEntity extends BlockEntity implements MenuProvider {
 
@@ -32,6 +34,9 @@ public class IndustrialProcessingUnitBlockEntity extends BlockEntity implements 
      * 数据是否能在重进世界后恢复
      */
     private int progress = 0;
+
+    // 固定加工时长：100 tick
+    private static final int maxProgress = 100;
 
     // 输入槽索引
     private static final int INPUT_SLOT = 0;
@@ -119,6 +124,7 @@ public class IndustrialProcessingUnitBlockEntity extends BlockEntity implements 
         public int get(int index) {
             return switch (index) {
                 case 0 -> progress;
+                case 1 -> maxProgress;
                 default -> 0;
             };
         }
@@ -140,7 +146,7 @@ public class IndustrialProcessingUnitBlockEntity extends BlockEntity implements 
          */
         @Override
         public int getCount() {
-            return 1;
+            return 2;
         }
     };
 
@@ -169,15 +175,114 @@ public class IndustrialProcessingUnitBlockEntity extends BlockEntity implements 
     /**
      * 每游戏刻执行一次（前提是 Block 中注册了 ticker）。
      *
-     * 这里我们让 progress 每 tick 自增，
-     * 用于证明 BlockEntity 正在参与游戏循环。
+     * 当前这里使用一个硬编码教学配方：
+     * raw_material -> material_ingot
      *
-     * setChanged() 表示数据已被修改，
-     * 告诉游戏该实体需要被保存。
+     * 加工逻辑非常简单：
+     * 1. 只有当输入槽中存在 raw_material，且输出槽能够接收 material_ingot 时，机器才会工作
+     * 2. 每 tick 增加 1 点 progress
+     * 3. 当 progress 达到 MAX_PROGRESS 时，消耗 1 个输入并产出 1 个输出
+     * 4. progress 会被保存到 NBT，因此中途退出世界后不会丢失
      */
     public void tick() {
-        progress++;
+
+        if (hasRecipe()) {
+            setWorkingState(true);
+
+            progress++;
+            setChanged();
+
+            if (progress >= maxProgress) {
+                craftItem();
+            }
+        } else {
+            resetProgress();
+            setWorkingState(false);
+            setChanged();
+        }
+    }
+
+    private void setWorkingState(boolean working) {
+
+        BlockState currentState = level.getBlockState(worldPosition);
+
+        // 保险起见，确认当前位置还是这个方块
+        if (!currentState.hasProperty(IndustrialProcessingUnitBlock.WORKING)) {
+            return;
+        }
+
+        // 只有状态真的变化时才更新
+        if (currentState.getValue(IndustrialProcessingUnitBlock.WORKING) != working) {
+            level.setBlock(worldPosition,
+                    currentState.setValue(IndustrialProcessingUnitBlock.WORKING, working),
+                    3);
+        }
+    }
+
+    /**
+     * 当前机器是否满足加工条件。
+     *
+     * 条件包括：
+     * 1. 输入槽必须是 raw_material
+     * 2. 输出槽必须为空，或已经是 material_ingot
+     * 3. 输出槽必须还有空间容纳新的产物
+     */
+    private boolean hasRecipe() {
+        ItemStack inputStack = itemHandler.getStackInSlot(INPUT_SLOT);
+        ItemStack outputStack = itemHandler.getStackInSlot(OUTPUT_SLOT);
+
+        // 输入槽必须放的是硬编码原料
+        if (!inputStack.is(ModItems.RAW_MATERIAL.get())) {
+            return false;
+        }
+
+        ItemStack result = new ItemStack(ModItems.MATERIAL_INGOT.get());
+
+        // 输出槽为空，直接可以加工
+        if (outputStack.isEmpty()) {
+            return true;
+        }
+
+        // 输出槽里必须已经是同种产物
+        if (!outputStack.is(result.getItem())) {
+            return false;
+        }
+
+        // 输出槽数量不能超过堆叠上限
+        return outputStack.getCount() < outputStack.getMaxStackSize();
+    }
+
+    /**
+     * 真正执行一次加工：
+     * - 消耗 1 个 raw_material
+     * - 产出 1 个 material_ingot
+     * - 重置 progress
+     */
+    private void craftItem() {
+        ItemStack inputStack = itemHandler.getStackInSlot(INPUT_SLOT);
+        ItemStack outputStack = itemHandler.getStackInSlot(OUTPUT_SLOT);
+
+        inputStack.shrink(1);
+
+        if (outputStack.isEmpty()) {
+            itemHandler.setStackInSlot(OUTPUT_SLOT, new ItemStack(ModItems.MATERIAL_INGOT.get(), 1));
+        } else {
+            outputStack.grow(1);
+        }
+
+        resetProgress();
+
+        // 本次加工结束后，重新判断机器是否还能继续工作
+        setWorkingState(hasRecipe());
+
         setChanged();
+    }
+
+    /**
+     * 重置加工进度。
+     */
+    private void resetProgress() {
+        progress = 0;
     }
 
     /**
@@ -265,4 +370,5 @@ public class IndustrialProcessingUnitBlockEntity extends BlockEntity implements 
     public IItemHandler getItemHandler() {
         return itemHandler;
     }
+
 }

@@ -32,6 +32,7 @@ public class ModCreativeModeTabs {
                             // output.accept(...) 用于向标签中添加物品。
                             .displayItems((itemDisplayParameters, output) -> {
                                 output.accept(ModItems.RAW_MATERIAL.get());
+                                output.accept(ModItems.MATERIAL_INGOT.get());
                                 output.accept(ModBlocks.RAW_MATERIAL_BLOCK.get());
                                 output.accept(ModBlocks.INDUSTRIAL_PROCESSING_UNIT.get());
                             })

@@ -50,6 +50,12 @@ public class IndustrialProcessingUnitScreen extends AbstractContainerScreen<Indu
         this.inventoryLabelY = 81;
     }
 
+    private void renderProgressArrow(GuiGraphics guiGraphics, int x, int y) {
+        if (menu.isCrafting()) {
+            guiGraphics.blit(GUI, x + 100, y + 39, 16, 174, menu.getProgress(), 16);
+        }
+    }
+
     /**
      * 渲染 GUI 背景。
      *
@@ -79,6 +85,8 @@ public class IndustrialProcessingUnitScreen extends AbstractContainerScreen<Indu
         // 0,0：纹理起始坐标
         // imageWidth,imageHeight：绘制区域大小
         guiGraphics.blit(GUI, x, y, 0, 0, imageWidth, imageHeight);
+
+        renderProgressArrow(guiGraphics, x, y);
     }
 
     /**
