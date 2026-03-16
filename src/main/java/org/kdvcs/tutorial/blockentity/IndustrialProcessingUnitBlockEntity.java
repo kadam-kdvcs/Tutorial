@@ -156,7 +156,7 @@ public class IndustrialProcessingUnitBlockEntity extends BlockEntity implements 
      */
     @Override
     public Component getDisplayName() {
-        return Component.literal("be.title.industrial_processing_unit");
+        return Component.translatable("be.title.industrial_processing_unit");
     }
 
     /**
