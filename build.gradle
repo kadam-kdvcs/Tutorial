@@ -187,3 +187,34 @@ tasks.named('jar', Jar).configure {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
+
+gradle.projectsEvaluated {
+
+    def removeDep = { Task t, String depName ->
+        if (t == null) return
+        t.dependsOn.removeAll { dep ->
+            (dep instanceof Task && dep.name.equalsIgnoreCase(depName)) ||
+                    (dep instanceof String && dep.equalsIgnoreCase(depName))
+        }
+    }
+
+    def killDownloadAssetsFor = { String taskName ->
+        def t = tasks.findByName(taskName)
+        removeDep(t, "downloadAssets")
+    }
+
+    [
+            "prepareRuns",
+            "prepareRunClient",
+            "prepareRunClientCompile",
+            "prepareRunServer",
+            "prepareRunData",
+            "prepareRunDataCompile"
+    ].each { killDownloadAssetsFor(it) }
+
+    ["runClient", "runData", "runServer", "rundata", "runclient", "runserver"].each { killDownloadAssetsFor(it) }
+}
+
+tasks.matching { it.name.equalsIgnoreCase("downloadAssets") }.configureEach {
+    enabled = false
+}
