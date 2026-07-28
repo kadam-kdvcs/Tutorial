@@ -27,16 +27,16 @@ public class IndustrialProcessingUnitBlockEntity extends BlockEntity implements 
     /**
      * 一个教学用的示例字段。
      *
-     * progress 在本章并不代表真实机器逻辑，
-     * 它只是一个“计数器”，用于验证：
-     * BlockEntity 是否在 tick
-     * 数据是否能被保存
+     * progress 在当前阶段仍然不代表真实机器逻辑，
+     * 它只是一个“计数器”示例，用于验证：
+     * BlockEntity 是否能保存额外数据
      * 数据是否能在重进世界后恢复
+     * 数据是否能通过 ContainerData 同步到界面
+     *
+     * 本章不会继续推进它，
+     * 只是保留这条已有的数据链路，避免结构被大规模删改。
      */
     private int progress = 0;
-
-    // 固定加工时长：100 tick
-    private static final int maxProgress = 100;
 
     // 输入槽索引
     private static final int INPUT_SLOT = 0;
@@ -108,11 +108,11 @@ public class IndustrialProcessingUnitBlockEntity extends BlockEntity implements 
      * ContainerData 的作用是把 BlockEntity 中的整数数据
      * 暴露给 Menu 系统，从而在客户端与服务端之间自动同步。
      *
-     * 在本例中我们只同步一个字段：
-     * index = 0  → progress
+     * 在本例中我们仍然保留两个字段：
+     * index = 0 -> progress
      *
-     * 如果以后需要同步更多数据（例如最大进度、能量等），
-     * 只需要增加新的 index 即可。
+     * 虽然本章暂时不会使用它们驱动真正的加工逻辑，
+     * 但这条同步链路会先保留，避免后续章节再重新大幅改动结构。
      */
     protected final ContainerData data = new ContainerData() {
 
@@ -124,7 +124,6 @@ public class IndustrialProcessingUnitBlockEntity extends BlockEntity implements 
         public int get(int index) {
             return switch (index) {
                 case 0 -> progress;
-                case 1 -> maxProgress;
                 default -> 0;
             };
         }
@@ -140,13 +139,10 @@ public class IndustrialProcessingUnitBlockEntity extends BlockEntity implements 
 
         /**
          * 返回需要同步的数据数量。
-         *
-         * 因为这里只有 progress 一个变量，
-         * 所以返回 1。
          */
         @Override
         public int getCount() {
-            return 2;
+            return 1;
         }
     };
 
@@ -175,33 +171,41 @@ public class IndustrialProcessingUnitBlockEntity extends BlockEntity implements 
     /**
      * 每游戏刻执行一次（前提是 Block 中注册了 ticker）。
      *
-     * 当前这里使用一个硬编码教学配方：
-     * raw_material -> material_ingot
+     * 当前阶段，这台机器还没有真正进入加工逻辑。
+     * 我们只让它根据输入槽中的物品，切换自己的工作状态。
      *
-     * 加工逻辑非常简单：
-     * 1. 只有当输入槽中存在 raw_material，且输出槽能够接收 material_ingot 时，机器才会工作
-     * 2. 每 tick 增加 1 点 progress
-     * 3. 当 progress 达到 MAX_PROGRESS 时，消耗 1 个输入并产出 1 个输出
-     * 4. progress 会被保存到 NBT，因此中途退出世界后不会丢失
+     * 也就是说：
+     * - 如果输入槽中存在 raw_material，机器进入 WORKING 状态
+     * - 其他情况下，机器退出 WORKING 状态
+     *
+     * 这样就可以先把“内部条件 -> 方块状态 -> 模型切换 / 发光反馈”
+     * 这条链路跑通，而不必提前引入完整的配方系统。
      */
     public void tick() {
-
-        if (hasRecipe()) {
-            setWorkingState(true);
-
-            progress++;
-            setChanged();
-
-            if (progress >= maxProgress) {
-                craftItem();
-            }
-        } else {
-            resetProgress();
-            setWorkingState(false);
-            setChanged();
-        }
+        setWorkingState(shouldBeWorking());
     }
 
+    /**
+     * 当前机器是否应该处于工作状态。
+     *
+     * 在当前阶段，我们只检查输入槽中是否存在合法原料。
+     * 只要输入槽中放入 raw_material，
+     * 就认为机器进入工作状态。
+     */
+    private boolean shouldBeWorking() {
+        ItemStack inputStack = itemHandler.getStackInSlot(INPUT_SLOT);
+        return inputStack.is(ModItems.RAW_MATERIAL.get());
+    }
+
+
+
+    /**
+     * 将机器内部的工作状态同步到方块状态上。
+     *
+     * 只有当状态真的发生变化时，
+     * 才调用 setBlock 更新当前位置的 BlockState，
+     * 避免每 tick 重复写回同一个状态。
+     */
     private void setWorkingState(boolean working) {
 
         BlockState currentState = level.getBlockState(worldPosition);
@@ -220,76 +224,10 @@ public class IndustrialProcessingUnitBlockEntity extends BlockEntity implements 
     }
 
     /**
-     * 当前机器是否满足加工条件。
-     *
-     * 条件包括：
-     * 1. 输入槽必须是 raw_material
-     * 2. 输出槽必须为空，或已经是 material_ingot
-     * 3. 输出槽必须还有空间容纳新的产物
-     */
-    private boolean hasRecipe() {
-        ItemStack inputStack = itemHandler.getStackInSlot(INPUT_SLOT);
-        ItemStack outputStack = itemHandler.getStackInSlot(OUTPUT_SLOT);
-
-        // 输入槽必须放的是硬编码原料
-        if (!inputStack.is(ModItems.RAW_MATERIAL.get())) {
-            return false;
-        }
-
-        ItemStack result = new ItemStack(ModItems.MATERIAL_INGOT.get());
-
-        // 输出槽为空，直接可以加工
-        if (outputStack.isEmpty()) {
-            return true;
-        }
-
-        // 输出槽里必须已经是同种产物
-        if (!outputStack.is(result.getItem())) {
-            return false;
-        }
-
-        // 输出槽数量不能超过堆叠上限
-        return outputStack.getCount() < outputStack.getMaxStackSize();
-    }
-
-    /**
-     * 真正执行一次加工：
-     * - 消耗 1 个 raw_material
-     * - 产出 1 个 material_ingot
-     * - 重置 progress
-     */
-    private void craftItem() {
-        ItemStack inputStack = itemHandler.getStackInSlot(INPUT_SLOT);
-        ItemStack outputStack = itemHandler.getStackInSlot(OUTPUT_SLOT);
-
-        inputStack.shrink(1);
-
-        if (outputStack.isEmpty()) {
-            itemHandler.setStackInSlot(OUTPUT_SLOT, new ItemStack(ModItems.MATERIAL_INGOT.get(), 1));
-        } else {
-            outputStack.grow(1);
-        }
-
-        resetProgress();
-
-        // 本次加工结束后，重新判断机器是否还能继续工作
-        setWorkingState(hasRecipe());
-
-        setChanged();
-    }
-
-    /**
-     * 重置加工进度。
-     */
-    private void resetProgress() {
-        progress = 0;
-    }
-
-    /**
      * 对外提供当前进度值。
      *
-     * 目前我们还没有使用到它。
-     * 但在后续 GUI 章节中，界面会通过这种 getter 方法读取数据。
+     * 目前我们还没有继续使用到它。
+     * 但它仍然保留，作为后续章节继续扩展的示例字段。
      */
     public int getProgress() {
         return progress;

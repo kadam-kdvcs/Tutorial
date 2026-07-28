@@ -97,9 +97,6 @@ public class IndustrialProcessingUnitBlock extends HorizontalDirectionalBlock im
          * 机器的加工逻辑只应该在服务端运行，
          * 客户端只负责接收同步后的结果并进行显示。
          *
-         * 如果客户端也执行 tick()，
-         * 就会导致 progress 在两侧同时推进，
-         * 从而出现进度条显示错乱、重进世界后比例异常等问题。
          */
         if (pLevel.isClientSide()) {
             return null;

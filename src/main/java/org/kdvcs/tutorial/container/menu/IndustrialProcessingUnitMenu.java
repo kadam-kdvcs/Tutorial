@@ -7,7 +7,6 @@ import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import org.kdvcs.tutorial.blockentity.IndustrialProcessingUnitBlockEntity;
@@ -55,7 +54,7 @@ public class IndustrialProcessingUnitMenu extends AbstractContainerMenu {
         // 从网络数据中读取方块位置，并找到对应的 BlockEntity
         this(id, inv,
                 inv.player.level().getBlockEntity(buf.readBlockPos()),
-                new SimpleContainerData(2));
+                new SimpleContainerData(1));
     }
 
     /**
@@ -139,20 +138,6 @@ public class IndustrialProcessingUnitMenu extends AbstractContainerMenu {
                     topRow
             ));
         }
-    }
-
-    public boolean isCrafting() {
-        return data.get(0) > 0;
-    }
-
-    public int getProgress() {
-        int progress = data.get(0);
-        int maxProgress = data.get(1);
-        int arrowWidth = 30;
-
-        return maxProgress > 0
-                ? Math.round((float) progress * arrowWidth / maxProgress)
-                : 0;
     }
 
     /**
